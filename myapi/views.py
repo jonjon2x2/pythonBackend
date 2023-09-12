@@ -30,14 +30,16 @@ class CustomerApiView(generics.GenericAPIView):
             return Response({"status": "fail", "message": f"Phone number is invalid"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Validate Email
-        if validate_email(email):   
+        try:
+            validate_email(email)
+        except ValidationError:
             return Response({"status": "fail", "message": f"Email format is invalid"}, status=status.HTTP_400_BAD_REQUEST)
 
         data = {
             'first_name': request.data.get('first_name'),
             'last_name': request.data.get('last_name'),
-            'email': request.data.get(email),
-            'phone_no': request.data.get(number),
+            'email': email,
+            'phone_no': number,
             'address': request.data.get('address'),
             'postcode': request.data.get('postcode'),
             'state': request.data.get('state')
@@ -105,5 +107,9 @@ class CustomerApiDetailView(generics.GenericAPIView):
 
 class Utilities():
     def isPhoneNumberValid(number):
+        if number is None:
+            return False
+        
         pattern = re.compile("^(\+?6?01)[02-46-9]-*[0-9]{7}$|^(\+?6?01)[1]-*[0-9]{8}$")
+        print(pattern.match(number))
         return pattern.match(number)
